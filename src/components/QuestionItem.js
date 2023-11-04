@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 
-function QuestionItem({ question }) {
+function QuestionItem({ question, onDelete }) {
   const { id, prompt, answers, correctIndex } = question;
 
   const options = answers.map((answer, index) => (
@@ -8,6 +8,29 @@ function QuestionItem({ question }) {
       {answer}
     </option>
   ));
+
+  const [isDeleting, setIsDeleting] = useState(false); // New state variable
+
+  const handleDeleteClick = () => {
+    // If a delete request is already in progress, do nothing
+    if (isDeleting) {
+      return;
+    }
+
+    // Disable the button and show a loading indicator
+    setIsDeleting(true);
+
+    // Call the onDelete function and pass the question ID for deletion
+    onDelete(id)
+      .then(() => {
+        // After a successful request, enable the button again
+        setIsDeleting(false);
+      })
+      .catch(() => {
+        // In case of an error, enable the button and handle the error
+        setIsDeleting(false);
+      });
+  };
 
   return (
     <li>
@@ -17,7 +40,12 @@ function QuestionItem({ question }) {
         Correct Answer:
         <select defaultValue={correctIndex}>{options}</select>
       </label>
-      <button>Delete Question</button>
+      <button
+        onClick={handleDeleteClick}
+        disabled={isDeleting}
+      >
+        {isDeleting ? "Deleting..." : "Delete Question"}
+      </button>
     </li>
   );
 }
